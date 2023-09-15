@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}
+    Add Record
+{% endblock title %}
+{% block content %}
+    <div class="col-4 offset-4">
+        <div id="validationMessage">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <h1>Add Records</h1>
+        <form method="POST" id="add-record-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <br>
+            <button type="submit" id="record-submit-btn" class="btn btn-success">Submit</button>
+            <div id="loadingSpinner"
+                 class="spinner-border text-primary"
+                 style="display: none"
+                 role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </form>
+    </div>
+    <script>
+        const submitButton = document.getElementById('record-submit-btn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        document.getElementById('add-record-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            submitButton.disabled = true; // Disable the submit button
+            loadingSpinner.style.display = 'inline-block'; // Show the loading spinner
+            var form = e.target;
+            var formData = new FormData(form);
+            var validationMessage = document.getElementById('validationMessage');
+            validationMessage.innerHTML = ''; // Clear previous validation messages
+
+            // If there are validation errors, stop form submission
+            if (validationMessage.innerHTML !== '') {
+                return;
+            }
+
+            // If all fields are valid, proceed with form submission using AJAX
+            fetch('/add_record/', {
+                method: 'POST',
+                body: formData
+            })
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                        if (data.status === 'error') {
+                            // Display the validation message
+                            alert(data.message);
+
+                            for (const field in data.errors) {
+                                const errorMessages = data.errors[field];
+                                validationMessage.innerHTML += '<div class="alert alert-danger alert-dismissible fade show"><strong>' + field + ' : </strong> ' + errorMessages + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+                            }
+                        
+                            submitButton.disabled = false; // Enable the submit button
+                            loadingSpinner.style.display = 'none'; // Hide the loading spinner
+
+                        } else {
+                            // Reset the form after successful response
+                            form.reset();
+                            submitButton.disabled = false; // Enable the submit button
+                            loadingSpinner.style.display = 'none'; // Hide the loading spinner
+                            // Display a success message
+                            validationMessage.innerHTML = '<div class="alert alert-success alert-dismissible fade show">' + data.message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+                            setTimeout(function () {
+                                window.location.href = "{% url 'home' %}"; // Replace 'login' with the correct URL name of your login page
+                            }, 2000);
+
+                        }
+                    }
+                )
+                .catch(function (error) {
+                    console.error('Error:', error);
+                });
+        });
+
+        function deleteRecord(pk) {
+            const confirmed = window.confirm('Are you sure you want to delete this record?');
+            if (!confirmed) {
+                return;
+            }
+    
+            fetch(`/delete_record_ajax/${pk}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Handle success, e.g., show a success message, update the table, etc.
+                    alert(data.message);
+                } else {
+                    // Handle error, e.g., show an error message, etc.
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                // Handle error, e.g., show an error message, etc.
+                console.error('Delete error:', error);
+            });
+        }
+    </script>
+{% endblock content %}
+{% block js %}
+{% endblock js %}

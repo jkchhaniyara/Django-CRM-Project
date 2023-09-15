@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %} Signup {% endblock title %}
+{% block content %}
+
+    <div class="col-4 offset-4">
+        <div id="messages">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <h1>Welcome to Django CRM</h1>
+        <h1>Signup</h1>
+        <form method="post" id="signupForm">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <input type="submit" class="btn btn-success" value="Sign up">
+        </form>
+    </div>
+
+    {#    <script>#}
+    {#       #}
+    {#        document.addEventListener('submit', function (e) {#}
+    {#            e.preventDefault();#}
+    {#            var form = e.target;#}
+    {#            var name = form.querySelector('#id_name').value;#}
+    {#            var email = form.querySelector('#id_email').value;#}
+    {#            var username = form.querySelector('#id_username').value;#}
+    {#            var password1 = form.querySelector('#id_password1').value;#}
+    {#            var password2 = form.querySelector('#id_password2').value;#}
+    {#            var csrfmiddlewaretoken = form.querySelector('input[name=csrfmiddlewaretoken]').value;#}
+    {##}
+    {#            var formData = new FormData();#}
+    {#            formData.append('name', name);#}
+    {#            formData.append('email', email);#}
+    {#            formData.append('username', username);#}
+    {#            formData.append('password1', password1);#}
+    {#            formData.append('password2', password2);#}
+    {#            formData.append('csrfmiddlewaretoken', csrfmiddlewaretoken);#}
+    {##}
+    {#            fetch('/signupAjax/', {#}
+    {#                method: 'POST',#}
+    {#                body: formData#}
+    {#            })#}
+    {#                .then(function (response) {#}
+    {#                    return response.json();#}
+    {##}
+    {##}
+    {#                })#}
+    {#                .then(function (data) {#}
+    {#                    var messagesContainer = document.getElementById('messagesContainer');#}
+    {#                    if (data.status === 'error') {#}
+    {#                        // Display the validation message#}
+    {#                        messagesContainer.innerHTML = '<div class="alert alert-danger alert-dismissible fade show">' + data.message + '</div>';#}
+    {#                    } else {#}
+    {#                        // Reset the form after successful response#}
+    {#                        form.reset();#}
+    {#                        // Display a success message#}
+    {#                        messagesContainer.innerHTML = '<div class="alert alert-success alert-dismissible fade show">' + data.message + '</div>';#}
+    {#                    }#}
+    {#                })#}
+    {#                .catch(function (error) {#}
+    {#                    console.error('Error:', error);#}
+    {#                });#}
+    {#        });#}
+    {##}
+    {#    </script>#}
+
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var form = e.target;
+            var formData = new FormData(form);
+            var messagesContainer = document.getElementById('messages');
+            messagesContainer.innerHTML = ''; // Clear previous validation messages
+
+            // If there are validation errors, stop form submission
+            if (messagesContainer.innerHTML !== '') {
+                return;
+            }
+
+            // If all fields are valid, proceed with form submission using AJAX
+            fetch('/register/', {
+                method: 'POST',
+                body: formData
+            })
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    if (data.status === 'error') {
+                        // Display the validation message
+                        messagesContainer.innerHTML = '<div class="alert alert-danger alert-dismissible fade show">' + data.message + '</div>';
+                    } else {
+                        // Reset the form after successful response
+                        form.reset();
+                        // Display a success message
+                        messagesContainer.innerHTML = '<div class="alert alert-success alert-dismissible fade show">' + data.message + '</div>';
+                        setTimeout(function () {
+                            window.location.href = "{% url 'home' %}"; // Replace 'login' with the correct URL name of your login page
+                        }, 2000);
+                    }
+                })
+                .catch(function (error) {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+
+
+{% endblock %}

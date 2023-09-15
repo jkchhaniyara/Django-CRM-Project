@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}
+    Home
+{% endblock title %}
+{% block css %}
+    <style></style>
+{% endblock css %}
+{% block content %}
+    {% if user.is_authenticated %}
+        <div class="container-fluid py-4">
+            <div class="row">
+                <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+                    <div class="card">
+                        <div class="card-body p-3">
+                            <div class="row">
+                                <div class="col-8">
+                                    <div class="numbers">
+                                        <p class="text-sm mb-0 text-capitalize font-weight-bold">Total Customers Record</p>
+                                        <h5 class="font-weight-bolder mb-0">
+                                            {{ customer_record_count }}
+                                            <span class="text-success text-sm font-weight-bolder"></span>
+                                        </h5>
+                                    </div>
+                                </div>
+                                <div class="col-4 text-end">
+                                    <div class="icon icon-shape bg-gradient-primary shadow text-center border-radius-md">
+                                        <i class="ni ni-money-coins text-lg opacity-10" aria-hidden="true"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    <script>
+        // Function to fetch data and update the table
+        const recordUrl = "record/";
+
+        // Function to fetch data and update the table
+        function fetchDataAndUpdateTable() {
+            
+            fetch('fetch_data/') // Replace with your actual URL for data fetching
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#data-table tbody');
+                    tableBody.innerHTML = ''; // Clear existing rows
+                    var i = 1;
+                    data.forEach(item => {
+                        const createdAtDateTime = new Date(item.created_at);
+                        const formattedDateTime = createdAtDateTime.toLocaleString(); // Formats both date and time
+                        const newRow = document.createElement('tr');
+                        newRow.innerHTML = `<td><a href="${recordUrl}${item.id}">${i++}</a></td><td>${item.first_name}</td><td>${item.last_name}</td><td>${item.email}</td><td>${item.phone}</td><td>${item.city}</td><td>${item.state}</td><td>${formattedDateTime}</td>`;
+                        tableBody.appendChild(newRow);
+                    });
+                    
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    
+                });
+        }
+
+        // Call the function when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchDataAndUpdateTable();
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var form = e.target;
+            var formData = new FormData(form);
+            var messagesContainer = document.getElementById('messages');
+            messagesContainer.innerHTML = '';
+
+            fetch(' ', {  // Use an empty URL as the URL should be the current page URL for the login view
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin',  // Ensure that cookies are included in the request
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'  // Include CSRF token in the request headers
+                }
+            })
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    var messageHTML = '';
+                    if (data.status === 'success') {
+                        messageHTML = '<div class="alert alert-success alert-dismissible fade show">' + data.message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+                         // Redirect to the home page after a short delay (adjust as needed)
+                         setTimeout(function () {
+                            window.location.href = "{% url 'home' %}";
+                        }, 2000);
+                    } else {
+                        messageHTML = '<div class="alert alert-danger alert-dismissible fade show">' + data.message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+                    }
+                    messagesContainer.innerHTML = messageHTML;
+                    
+                })
+                .catch(function (error) {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+{% endblock content %}

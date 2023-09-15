@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}
+    Signup
+{% endblock title %}
+{% block content %}
+    <div class="col-4 offset-4">
+        <div id="validationMessage">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <h1>Welcome to Django CRM</h1>
+        <h1>Signup</h1>
+        <form method="post" id="signupForm">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" class="btn btn-success" value="Sign up">
+        </form>
+    </div>
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var form = e.target;
+            var formData = new FormData(form);
+            var validationMessage = document.getElementById('validationMessage');
+            validationMessage.innerHTML = ''; // Clear previous validation messages
+
+            // If there are validation errors, stop form submission
+            if (validationMessage.innerHTML !== '') {
+                return;
+            }
+
+            // If all fields are valid, proceed with form submission using AJAX
+            fetch('/register/', {
+                method: 'POST',
+                body: formData
+            })
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    if (data.status === 'error') {
+                        // Display the validation message
+                        for (const field in data.errors) {
+                                const errorMessages = data.errors[field];
+                                validationMessage.innerHTML += '<div class="alert alert-danger alert-dismissible fade show"><strong>' + field + ' : </strong> ' + errorMessages + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+                            }
+                    } else {
+                        // Reset the form after successful response
+                        form.reset();
+                        // Display a success message
+                        validationMessage.innerHTML = '<div class="alert alert-success alert-dismissible fade show">' + data.message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+                        setTimeout(function () {
+                            window.location.href = "{% url 'home' %}"; // Replace 'login' with the correct URL name of your login page
+                        }, 2000);
+                    }
+                })
+                .catch(function (error) {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+{% endblock content %}

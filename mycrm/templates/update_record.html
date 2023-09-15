@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Update Record{% endblock title %}
+
+{% block content %}
+
+    <div class="container">
+        <div class="row">
+            <div class="col-6 offset-3 mt-3 mb-sm-0">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Update Record</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="updateForm" data-update-url="{{ update_record_url }}"
+                              data-record-url="{{ record_url }}">
+                            {% csrf_token %}
+                            {{ forms.as_p }}
+                            <!-- Add other fields here -->
+                            <button type="submit" class="btn btn-primary">Update</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const updateRecordUrl = document.getElementById('updateForm').getAttribute('data-update-url');
+        const RecordUrl = document.getElementById('updateForm').getAttribute('data-record-url');
+
+        document.getElementById('updateForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var form = e.target;
+            var formData = new FormData(form);
+            console.log(updateRecordUrl)
+            fetch(updateRecordUrl, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin',  // Ensure that cookies are included in the request
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'  // Include CSRF token in the request headers
+                }
+            })
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    if (data.status === 'success') {
+                        // Record updated successfully, show a success message or redirect
+                        alert('Record updated successfully!');
+                        window.location.href = RecordUrl;
+                    } else if (data.status === 'error') {
+                        // Display form errors
+                        for (const field in data.errors) {
+                            const errorMessage = data.errors[field];
+                            document.getElementById(`${field}_error`).innerText = errorMessage;
+                        }
+                    }
+                })
+                .catch(function (error) {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+
+{% endblock content %}

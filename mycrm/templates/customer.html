@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}
+    Customer Record
+{% endblock title %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-6 offset-3 mt-3 mb-sm-0">
+                <div class="col-4 offset-4">
+                    <div id="validationMessage">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Customer Record</h5>
+                    </div>
+                    <div class="card-body" id="data-table-2">
+                        <p class="card-text">
+                            <strong>ID:</strong><span id="record-id"></span>
+                        </p>
+                        <p class="card-text">
+                            <strong>First Name:</strong><span id="first-name"></span>
+                        </p>
+                        <p class="card-text">
+                            <strong>Last Name:</strong><span id="last-name"></span>
+                        </p>
+                        <p class="card-text">
+                            <strong>Email:</strong><span id="email"></span>
+                        </p>
+                        <p class="card-text">
+                            <strong>Phone:</strong><span id="phone"></span>
+                        </p>
+                        <p class="card-text">
+                            <strong>City:</strong><span id="city"></span>
+                        </p>
+                        <p class="card-text">
+                            <strong>State:</strong><span id="state"></span>
+                        </p>
+                        <p class="card-text">
+                            <strong>Created at:</strong><span id="created-at"></span>
+                        </p>
+                        <a href="{% url 'home' %}" class="btn btn-primary">Back</a>
+                        <a onclick="deleteRecord({{ customer_record.id }})"
+                           class="btn btn-danger">Delete</a>
+                        <a href="{% url 'update_record' customer_record.id %}"
+                           class="btn btn-info">Update</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Function to fetch data and update the table
+        function fetchDataAndUpdateTable2() {
+
+            fetch('{% url "customer_record_ajax" customer_record.id %}') // Replace with your actual URL for data fetching
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('record-id').innerText = data.id;
+                    document.getElementById('first-name').innerText = data.first_name;
+                    document.getElementById('last-name').innerText = data.last_name;
+                    document.getElementById('email').innerText = data.email;
+                    document.getElementById('phone').innerText = data.phone;
+                    document.getElementById('city').innerText = data.city;
+                    document.getElementById('state').innerText = data.state;
+                    document.getElementById('created-at').innerText = data.created_at;
+
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+
+                });
+        }
+
+        // Call the function when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchDataAndUpdateTable2();
+        });
+        
+        
+    function deleteRecord(pk) {
+        const confirmed = window.confirm('Are you sure you want to delete this record of {{ customer_record.first_name }} ?');
+        if (!confirmed) {
+            return;
+        }
+
+        fetch(`/delete_record/${pk}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Handle success, e.g., show a success message, update the table, etc.
+                // Display a success message
+                validationMessage.innerHTML = '<div class="alert alert-success alert-dismissible fade show">' + data.message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+                setTimeout(function () {
+                    window.location.href = "{% url 'home' %}"; 
+                    // Replace 'login' with the correct URL name of your login page
+                    }, 2000);
+            } else {
+                alert(data.message);
+                validationMessage.innerHTML = '<div class="alert alert-danger alert-dismissible fade show">' + data.message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+
+            }
+        })
+        .catch(error => {
+            // Handle error, e.g., show an error message, etc.
+            console.error('Delete error:', error);
+        });
+    }
+
+
+    </script>
+{% endblock content %}

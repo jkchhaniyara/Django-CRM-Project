@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}
+    Home
+{% endblock title %}
+{% block css %}
+    <style></style>
+{% endblock css %}
+{% block content %}
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header pb-0">
+                        <h6>Customers table</h6>
+                    </div>
+                    <div class="card-body px-0 pt-0 pb-2">
+                        <div class="table-responsive p-0">
+                            <table class="table align-items-center mb-0" id="data-table">
+                                <thead>
+                                    <tr>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Author</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Function</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Employed</th>
+                                        <th class="text-secondary opacity-7"></th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Author</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Function</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Employed</th>
+                                        <th class="text-secondary opacity-7"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endblock content %}
+    {% block js %}
+        <script>
+      // Your JavaScript code
+const recordUrl = "/record/";
+
+function fetchDataAndUpdateTable() {
+  fetch('/fetch_data/') // Replace with your actual URL for data fetching
+    .then(response => response.json())
+    .then(data => {
+      const tableBody = document.querySelector('#data-table tbody');
+      if (!tableBody) {
+        console.error('Table body not found.');
+        return;
+      }
+      tableBody.innerHTML = ""; // Clear existing rows
+      var i = 1;
+      data.forEach(item => {
+        const createdAtDateTime = new Date(item.created_at);
+        const formattedDateTime = createdAtDateTime.toLocaleString();
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `<td><a href="${recordUrl}${item.id}">${i++}</a></td><td>${item.first_name}</td><td>${item.last_name}</td><td>${item.email}</td><td>${item.phone}</td><td>${item.city}</td><td>${item.state}</td><td>${formattedDateTime}</td>`;
+        tableBody.appendChild(newRow);
+      });
+    })
+    .catch(error => {
+      console.error('Fetch error:', error);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  fetchDataAndUpdateTable();
+});
+        </script>
+    {% endblock js %}
