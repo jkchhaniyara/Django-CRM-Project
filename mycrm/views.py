@@ -84,10 +84,9 @@ def delete_record(request, pk):
     delete_record = get_object_or_404(Record, id=pk)
 
     if request.method == "POST":
-        if request.user.has_perm("mycrm.delete_record"):
             delete_record.delete()
             return JsonResponse({"status": "success", "message": "Record deleted."})
-        else:
+    else:
             return JsonResponse(
                 {"status": "error", "message": "You don't have permission to delete"}
             )
@@ -97,10 +96,6 @@ def delete_record(request, pk):
 
 def add_record_view(request):
     if request.method == "POST":
-        if not request.user.has_perm("mycrm.add_record"):
-            return JsonResponse(
-                {"status": "error", "message": "you have no permission to add record!"}
-            )
         form = AddRecordForm(request.POST)
         if form.is_valid():
             form.save()

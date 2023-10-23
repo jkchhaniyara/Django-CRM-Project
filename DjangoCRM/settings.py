@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 print(BASE_DIR)
@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-ktmp)4@$&r6fs9hnau5m0-qnfs^%5320e-!sh+jlv*2-j@%uha
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["jkchhaniyara.pythonanywhere.com"]
 
 
 # Application definition
@@ -77,11 +77,8 @@ WSGI_APPLICATION = "DjangoCRM.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "django_crm",
-        "USER": "root",
-        "PASSWORD": "root",
-        "HOST": "localhost",
+        "ENGINE": "django.db.backends.sqlite3",
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -122,6 +119,7 @@ USE_TZ = False
 STATIC_URL = "static/"
 
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static/')
 
 
 # Default primary key field type
